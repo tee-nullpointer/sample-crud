@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/tee-nullpointer/go-common-kit/pkg/logger"
+	"go.uber.org/zap"
 )
 
 var client *redis.Client
@@ -31,7 +31,7 @@ func NewRedisClient(cfg config.RedisConfig) *redis.Client {
 		panic(fmt.Errorf("failed to connect to Redis: %w", err))
 	}
 
-	logger.Info("Successfully connected to Redis")
+	zap.L().Info("Successfully connected to Redis")
 	return client
 }
 

@@ -44,12 +44,13 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	sig := <-quit
-	logger.Info("Received shutdown signal", zap.String("signal", sig.String()))
+	zap.L().Info("Received shutdown signal", zap.String("signal", sig.String()))
 	ginServer.GracefulShutdown()
 }
 
 func setupRouter(router *gin.Engine, db *gorm.DB, redisClient *redis.Client) {
 	router.Use(gin.Recovery())
+	router.Use(commonmiddleware.TraceMiddleware())
 	router.Use(commonmiddleware.LoggingMiddleware())
 	router.Use(middleware.ErrorRecover())
 

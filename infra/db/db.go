@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sample-crud/internal/config"
 
-	"github.com/tee-nullpointer/go-common-kit/pkg/logger"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -17,7 +16,7 @@ var (
 )
 
 func Init(config config.DatabaseConfig) *gorm.DB {
-	logger.Info("Initializing database connection")
+	zap.L().Info("Initializing database connection")
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
 		config.Host, config.User, config.Password, config.Name, config.Port, config.SSLMode)
 	var dbErr error
@@ -30,8 +29,8 @@ func Init(config config.DatabaseConfig) *gorm.DB {
 	if sqlDBErr != nil {
 		panic(fmt.Sprintf("Fail to initialize database connection: %v", sqlDBErr))
 	}
-	logger.Info("Database connection established")
-	logger.Info("Setting database connection pool parameters",
+	zap.L().Info("Database connection established")
+	zap.L().Info("Setting database connection pool parameters",
 		zap.Int("Max Connection", config.MaxConnection),
 		zap.Int("Max Idle", config.MaxIdle),
 		zap.Duration("Max Lifetime", config.MaxLifetime),
@@ -44,12 +43,12 @@ func Init(config config.DatabaseConfig) *gorm.DB {
 }
 
 func ShutDown() {
-	logger.Info("Shutting down database connection")
+	zap.L().Info("Shutting down database connection")
 	if sqlDB != nil {
 		if err := sqlDB.Close(); err != nil {
-			logger.Error("Fail to close database connection", zap.Error(err))
+			zap.L().Error("Fail to close database connection", zap.Error(err))
 			return
 		}
 	}
-	logger.Info("Database connection closed")
+	zap.L().Info("Database connection closed")
 }
