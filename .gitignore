@@ -1,0 +1,15 @@
+.idea/
+
+# Logs
+*.log
+
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+#Environment files
+.env
