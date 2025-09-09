@@ -15,17 +15,17 @@ import (
 	"go.uber.org/zap"
 )
 
-type ProductHandler struct {
+type ProductApiHandler struct {
 	productService service.ProductService
 }
 
-func NewProductHandler(productService service.ProductService) *ProductHandler {
-	return &ProductHandler{
+func NewProductApiHandler(productService service.ProductService) *ProductApiHandler {
+	return &ProductApiHandler{
 		productService: productService,
 	}
 }
 
-func (h *ProductHandler) Create(c *gin.Context) {
+func (h *ProductApiHandler) Create(c *gin.Context) {
 	l := logger.GetLogger(c.Request.Context())
 	var request domain.ProductCreation
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -46,7 +46,7 @@ func (h *ProductHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, response.Created(id))
 }
 
-func (h *ProductHandler) FindByID(c *gin.Context) {
+func (h *ProductApiHandler) FindByID(c *gin.Context) {
 	l := logger.GetLogger(c.Request.Context())
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -63,7 +63,7 @@ func (h *ProductHandler) FindByID(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Success(productInfo))
 }
 
-func (h *ProductHandler) Update(c *gin.Context) {
+func (h *ProductApiHandler) Update(c *gin.Context) {
 	l := logger.GetLogger(c.Request.Context())
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -93,7 +93,7 @@ func (h *ProductHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Success(nil))
 }
 
-func (h *ProductHandler) Delete(c *gin.Context) {
+func (h *ProductApiHandler) Delete(c *gin.Context) {
 	l := logger.GetLogger(c.Request.Context())
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

@@ -13,6 +13,7 @@ type Config struct {
 	Database DatabaseConfig
 	Redis    RedisConfig
 	Logger   LoggerConfig
+	Grpc     GrpcConfig
 }
 
 type ServerConfig struct {
@@ -50,6 +51,10 @@ type LoggerConfig struct {
 	Format string
 }
 
+type GrpcConfig struct {
+	Port int
+}
+
 func Load() *Config {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -85,6 +90,9 @@ func Load() *Config {
 		Logger: LoggerConfig{
 			Level:  env.GetEnv("LOG_LEVEL", "info"),
 			Format: env.GetEnv("LOG_FORMAT", "json"),
+		},
+		Grpc: GrpcConfig{
+			Port: env.GetEnvAsInt("GRPC_PORT", 9090),
 		},
 	}
 }

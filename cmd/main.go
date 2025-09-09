@@ -11,16 +11,18 @@ import (
 	"sample-crud/internal/middleware"
 	"sample-crud/internal/repo"
 	"sample-crud/internal/service"
+	"sample-crud/proto/pb/product"
+	"strconv"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
 	commonhandler "github.com/tee-nullpointer/go-common-kit/handler"
+	commoninterceptor "github.com/tee-nullpointer/go-common-kit/interceptor"
 	commonmiddleware "github.com/tee-nullpointer/go-common-kit/middleware"
 	"github.com/tee-nullpointer/go-common-kit/pkg/logger"
 	"github.com/tee-nullpointer/go-common-kit/server"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -39,8 +41,22 @@ func main() {
 
 	ginServer := server.NewGinServer(cfg.Server.Mode)
 	ginRouter := ginServer.GetRouter()
-	setupRouter(ginRouter, gormDB, redisClient)
+	productRepo := repo.NewGormProductRepository(gormDB)
+	productService := service.NewProductService(productRepo, redisClient)
+	setupRouter(ginRouter, productService)
 	go ginServer.Start(cfg.Server.Host, cfg.Server.Port)
+
+	grpcServer := server.NewGRPCServer(
+		grpc.UnaryInterceptor(
+			commoninterceptor.ChainUnaryInterceptors(
+				commoninterceptor.RecoveryUnaryInterceptor,
+				commoninterceptor.TraceUnaryInterceptor,
+				commoninterceptor.LoggingUnaryInterceptor,
+			),
+		),
+	)
+	product.RegisterProductServiceServer(grpcServer.GetServer(), handler.NewProductGRPCHandler(productService))
+	go grpcServer.Start("localhost", strconv.Itoa(cfg.Grpc.Port))
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	sig := <-quit
@@ -48,15 +64,12 @@ func main() {
 	ginServer.GracefulShutdown()
 }
 
-func setupRouter(router *gin.Engine, db *gorm.DB, redisClient *redis.Client) {
+func setupRouter(router *gin.Engine, productService service.ProductService) {
 	router.Use(gin.Recovery())
 	router.Use(commonmiddleware.TraceMiddleware())
 	router.Use(commonmiddleware.LoggingMiddleware())
 	router.Use(middleware.ErrorRecover())
-
-	productRepo := repo.NewGormProductRepository(db)
-	productService := service.NewProductService(productRepo, redisClient)
-	productHandler := handler.NewProductHandler(productService)
+	productHandler := handler.NewProductApiHandler(productService)
 	monitor := router.Group("/")
 	{
 		monitor.GET("/health", commonhandler.HealthCheck)

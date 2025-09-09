@@ -3,6 +3,8 @@ package customerrors
 import (
 	"fmt"
 	"net/http"
+
+	"google.golang.org/grpc/codes"
 )
 
 const (
@@ -13,6 +15,7 @@ const (
 type CustomError struct {
 	Code       string
 	HttpStatus int
+	GrpcCode   codes.Code
 	Message    string
 	Details    string
 }
@@ -24,9 +27,10 @@ func (e CustomError) Error() string {
 	return e.Message
 }
 
-func NewCustomError(httpStatus int, code string, message string, detail string) *CustomError {
+func NewCustomError(httpStatus int, grpcCode codes.Code, code string, message string, detail string) *CustomError {
 	return &CustomError{
 		HttpStatus: httpStatus,
+		GrpcCode:   grpcCode,
 		Code:       code,
 		Message:    message,
 		Details:    detail,
@@ -34,9 +38,9 @@ func NewCustomError(httpStatus int, code string, message string, detail string) 
 }
 
 func NewBadRequestError(message string, detail string) *CustomError {
-	return NewCustomError(http.StatusBadRequest, CodeBadRequest, message, detail)
+	return NewCustomError(http.StatusBadRequest, codes.InvalidArgument, CodeBadRequest, message, detail)
 }
 
 func NewNotFoundError(message string, detail string) *CustomError {
-	return NewCustomError(http.StatusNotFound, CodeNotFound, message, detail)
+	return NewCustomError(http.StatusNotFound, codes.NotFound, CodeNotFound, message, detail)
 }
