@@ -5,6 +5,7 @@ This is a simple example of a CRUD (Create, Read, Update, Delete) application us
 ## Tech Stack
 - Go 1.25+
 - Gin Gonic
+- GRPC
 - GORM
 - Zap Logger
 - Postgres
