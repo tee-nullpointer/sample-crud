@@ -62,6 +62,7 @@ func main() {
 	sig := <-quit
 	zap.L().Info("Received shutdown signal", zap.String("signal", sig.String()))
 	ginServer.GracefulShutdown()
+	grpcServer.GracefulShutdown()
 }
 
 func setupRouter(router *gin.Engine, productService service.ProductService) {
