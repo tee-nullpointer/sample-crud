@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sample-crud/internal/domain"
+	"sample-crud/internal/repo"
 	customerrors "sample-crud/pkg/errors"
 	"time"
 
@@ -15,12 +16,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type ProductService struct {
-	productRepository domain.ProductRepository
+type ProductService interface {
+	CreateProduct(ctx context.Context, name string) (uint, error)
+	FindByID(ctx context.Context, id uint) (*domain.ProductInfo, error)
+	UpdateProduct(ctx context.Context, id uint, name string) error
+	DeleteProduct(ctx context.Context, id uint) error
+}
+
+type ProductServiceImpl struct {
+	productRepository repo.ProductRepository
 	redisClient       *redis.Client
 }
 
-func (p ProductService) CreateProduct(ctx context.Context, name string) (uint, error) {
+func (p ProductServiceImpl) CreateProduct(ctx context.Context, name string) (uint, error) {
 	log := logger.GetLogger(ctx)
 	log.SInfo("Starting product creation with name : %s", name)
 	id, err := p.productRepository.Create(ctx, &domain.Product{Name: name})
@@ -31,7 +39,7 @@ func (p ProductService) CreateProduct(ctx context.Context, name string) (uint, e
 	return id, nil
 }
 
-func (p ProductService) FindByID(ctx context.Context, id uint) (*domain.ProductInfo, error) {
+func (p ProductServiceImpl) FindByID(ctx context.Context, id uint) (*domain.ProductInfo, error) {
 	log := logger.GetLogger(ctx)
 	log.SInfo("Starting finding product with id : %d", id)
 
@@ -66,7 +74,7 @@ func (p ProductService) FindByID(ctx context.Context, id uint) (*domain.ProductI
 	return &productInfo, nil
 }
 
-func (p ProductService) UpdateProduct(ctx context.Context, id uint, name string) error {
+func (p ProductServiceImpl) UpdateProduct(ctx context.Context, id uint, name string) error {
 	log := logger.GetLogger(ctx)
 	log.SInfo("Starting product update with id : %d and name : %s", id, name)
 
@@ -93,7 +101,7 @@ func (p ProductService) UpdateProduct(ctx context.Context, id uint, name string)
 	return nil
 }
 
-func (p ProductService) DeleteProduct(ctx context.Context, id uint) error {
+func (p ProductServiceImpl) DeleteProduct(ctx context.Context, id uint) error {
 	log := logger.GetLogger(ctx)
 	log.SInfo("Starting product deletion with id : %d", id)
 
@@ -140,8 +148,8 @@ func invalidateProductCache(ctx context.Context, redisClient *redis.Client, id u
 	}
 }
 
-func NewProductService(productRepository domain.ProductRepository, redisClient *redis.Client) *ProductService {
-	return &ProductService{
+func NewProductService(productRepository repo.ProductRepository, redisClient *redis.Client) *ProductServiceImpl {
+	return &ProductServiceImpl{
 		productRepository: productRepository,
 		redisClient:       redisClient,
 	}

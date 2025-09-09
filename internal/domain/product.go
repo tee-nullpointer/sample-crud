@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"context"
 	"time"
 )
 
@@ -27,18 +26,4 @@ type ProductUpdate struct {
 type ProductInfo struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
-}
-
-type ProductRepository interface {
-	Create(ctx context.Context, product *Product) (uint, error)
-	FindByID(ctx context.Context, id uint) (*Product, error)
-	Update(ctx context.Context, product *Product) error
-	Delete(ctx context.Context, id uint) (int64, error)
-}
-
-type ProductService interface {
-	CreateProduct(ctx context.Context, name string) (uint, error)
-	FindByID(ctx context.Context, id uint) (*ProductInfo, error)
-	UpdateProduct(ctx context.Context, id uint, name string) error
-	DeleteProduct(ctx context.Context, id uint) error
 }

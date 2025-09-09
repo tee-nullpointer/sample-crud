@@ -8,6 +8,13 @@ import (
 	"gorm.io/gorm"
 )
 
+type ProductRepository interface {
+	Create(ctx context.Context, product *domain.Product) (uint, error)
+	FindByID(ctx context.Context, id uint) (*domain.Product, error)
+	Update(ctx context.Context, product *domain.Product) error
+	Delete(ctx context.Context, id uint) (int64, error)
+}
+
 type GormProductRepository struct {
 	db *gorm.DB
 }

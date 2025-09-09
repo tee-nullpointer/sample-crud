@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"sample-crud/internal/domain"
+	"sample-crud/internal/service"
 	customerrors "sample-crud/pkg/errors"
 	"sample-crud/pkg/response"
 	"strconv"
@@ -15,10 +16,10 @@ import (
 )
 
 type ProductHandler struct {
-	productService domain.ProductService
+	productService service.ProductService
 }
 
-func NewProductHandler(productService domain.ProductService) *ProductHandler {
+func NewProductHandler(productService service.ProductService) *ProductHandler {
 	return &ProductHandler{
 		productService: productService,
 	}
